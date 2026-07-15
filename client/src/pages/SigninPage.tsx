@@ -11,9 +11,11 @@ function SigninPage() {
 	async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
 
+		const form = e.currentTarget;
+
 		const formData = new FormData(e.currentTarget);
 		const data = Object.fromEntries(formData) as unknown as RegisterUserForm;
-
+		console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 		try {
 			const response = await apiFetch("/api/users", {
 				method: "POST",
@@ -40,14 +42,15 @@ function SigninPage() {
 			if (response.status === 201) {
 				setMessage("Votre compte a bien été créé !");
 				setIsError(false);
-				e.currentTarget.reset();
+				form.reset();
 				return;
 			}
 
 			// si le back renvoie un code inattendu (ex: 500)
 			setMessage("Une erreur inattendue est survenue.");
 			setIsError(true);
-		} catch {
+		} catch (error) {
+			console.error("Erreur fetch:", error);
 			setMessage("Impossible de contacter le serveur.");
 			setIsError(true);
 		}

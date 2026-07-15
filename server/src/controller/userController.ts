@@ -21,16 +21,23 @@ const createOne = async (req: Request, res: Response): Promise<void> => {
 
 		const hashedPassword = await hashPassword(plain_password);
 		const hashedPinCode = await hashPassword(plain_pincode);
-		const medpeople = await addOne({
+		const newUser = await addOne({
 			...restOfBody,
-			password: hashedPassword,
-			pin: hashedPinCode,
+			hashedpassword: hashedPassword,
+			hashedpincode: hashedPinCode,
 		});
 
-		res.status(201).json(medpeople);
+		res.status(201).json({
+			id: newUser.id,
+			med_lastname: newUser.med_lastname,
+			email: newUser.email,
+		});
 	} catch (error) {
 		console.error(error);
-		res.status(500).json({ message: "Server error" });
+		res.status(500).json({
+			success: false,
+			message: "Erreur serveur",
+		});
 	}
 };
 

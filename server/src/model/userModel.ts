@@ -11,7 +11,7 @@ const addOne = async ({
 	hashedpincode,
 }: Omit<MedicalPeople, "id">) => {
 	const [result] = await dbVet.query<ResultSetHeader>(
-		"INSERT INTO `medical-people` (lastname, firstname, status, email, password, pin) VALUES (?, ?, ?, ?, ?, ?)",
+		"INSERT INTO `medical-people` (med_lastname, med_firstname, status, email, password, pin) VALUES (?, ?, ?, ?, ?, ?)",
 		[
 			last_name,
 			first_name,
@@ -21,7 +21,11 @@ const addOne = async ({
 			hashedpincode,
 		],
 	);
-	return { id: result.insertId, last_name, email };
+	return {
+		id: result.insertId,
+		med_lastname: last_name,
+		email: email,
+	};
 };
 
 export { addOne };
