@@ -1,10 +1,75 @@
+import { useState } from "react";
+import { apiFetch } from "../hooks/apiFetch";
+
 import "./Auth.css";
 
 function SigninPage() {
+	const [message, setMessage] = useState<string>("");
+	const [isError, setIsError] = useState<boolean>(false);
+
+	async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+		e.preventDefault();
+
+		const formData = new FormData(e.currentTarget);
+		const data = Object.fromEntries(formData);
+
+		try {
+			const response = await apiFetch("/api/users", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(data),
+			});
+
+			if (response.status === 401) {
+				const errorData = await response.json();
+				setMessage(errorData.message);
+				setIsError(true);
+				return;
+			}
+
+			if (response.status === 400) {
+				const errorData = await response.json();
+				const messageCombine = errorData.errors.join("\n");
+				setMessage(messageCombine);
+				setIsError(true);
+				return;
+			}
+			// simplifier dire de relire les champs (flou sécurité)
+
+			if (response.status === 404) {
+				setMessage("Impossible de ??");
+				setIsError(true);
+				return;
+			}
+
+			if (response.status === 201) {
+				setMessage("Votre compte a bien été créé !");
+				setIsError(false);
+				/* 	form.reset(); */
+				return;
+			}
+
+			// si le back renvoie un code inattendu (ex: 500)
+			setMessage("Une erreur inattendue est survenue.");
+			setIsError(true);
+		} catch (_err) {
+			setMessage("Impossible de contacter le serveur.");
+			setIsError(true);
+		}
+	}
+
 	return (
 		<>
 			<h1>S'inscrire</h1>
-			<form className="auth-form">
+			<form
+				className="auth-form"
+				action="#"
+				method="post"
+				onSubmit={handleSubmit}
+				noValidate
+			>
 				<label htmlFor="medical-status">Statut médical</label>
 				<select id="medical-status" name="medical-status" required>
 					<option value="assistant">Assistant(e)</option>
@@ -45,6 +110,13 @@ function SigninPage() {
 				<button type="submit">Valider</button>
 				<button type="button">Annuler</button>
 			</form>
+			{message && (
+				<span
+					className={`auth-form-message ${isError ? "auth-form-message-error" : "auth-form-message-success"}`}
+				>
+					{message}
+				</span>
+			)}
 		</>
 	);
 }
