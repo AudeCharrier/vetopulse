@@ -2,6 +2,7 @@ import { useState } from "react";
 import { apiFetch } from "../hooks/apiFetch";
 
 import "./Auth.css";
+import type { RegisterUserForm } from "../types/types";
 
 function SigninPage() {
 	const [message, setMessage] = useState<string>("");
@@ -11,7 +12,7 @@ function SigninPage() {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget);
-		const data = Object.fromEntries(formData);
+		const data = Object.fromEntries(formData) as unknown as RegisterUserForm;
 
 		try {
 			const response = await apiFetch("/api/users", {
@@ -22,13 +23,6 @@ function SigninPage() {
 				body: JSON.stringify(data),
 			});
 
-			if (response.status === 401) {
-				const errorData = await response.json();
-				setMessage(errorData.message);
-				setIsError(true);
-				return;
-			}
-
 			if (response.status === 400) {
 				const errorData = await response.json();
 				const messageCombine = errorData.errors.join("\n");
@@ -36,10 +30,9 @@ function SigninPage() {
 				setIsError(true);
 				return;
 			}
-			// simplifier dire de relire les champs (flou sécurité)
 
 			if (response.status === 404) {
-				setMessage("Impossible de ??");
+				setMessage("Le service d'inscription est momentanément indisponible.");
 				setIsError(true);
 				return;
 			}
@@ -47,14 +40,14 @@ function SigninPage() {
 			if (response.status === 201) {
 				setMessage("Votre compte a bien été créé !");
 				setIsError(false);
-				/* 	form.reset(); */
+				e.currentTarget.reset();
 				return;
 			}
 
 			// si le back renvoie un code inattendu (ex: 500)
 			setMessage("Une erreur inattendue est survenue.");
 			setIsError(true);
-		} catch (_err) {
+		} catch {
 			setMessage("Impossible de contacter le serveur.");
 			setIsError(true);
 		}
@@ -70,42 +63,56 @@ function SigninPage() {
 				onSubmit={handleSubmit}
 				noValidate
 			>
-				<label htmlFor="medical-status">Statut médical</label>
-				<select id="medical-status" name="medical-status" required>
+				<label htmlFor="employee_status">Statut médical</label>
+				<select id="employee_status" name="employee_status" required>
 					<option value="assistant">Assistant(e)</option>
 					<option value="veterinarian">Vetérinaire</option>
 				</select>
 
-				<label htmlFor="lastname">Nom</label>
-				<input type="text" id="lastname" name="lastname" required></input>
+				<label htmlFor="last_name">Nom</label>
+				<input type="text" id="last_name" name="last_name" required></input>
 
-				<label htmlFor="firstname">Prénom</label>
-				<input type="text" id="firstname" name="firstname" required></input>
+				<label htmlFor="first_name">Prénom</label>
+				<input type="text" id="first_name" name="first_name" required></input>
 
 				<label htmlFor="email">Email</label>
 				<input type="text" id="email" name="email" required></input>
 
-				<label htmlFor="password">Mot de passe</label>
-				<input type="password" id="password" name="password" required></input>
-
-				<label htmlFor="confirm-password">Confirmation du mot de passe</label>
+				<label htmlFor="plain_password">Mot de passe</label>
 				<input
 					type="password"
-					id="confirm-password"
-					name="confirm-password"
+					id="password"
+					name="plain_password"
 					required
 				></input>
 
-				<label htmlFor="pin">Code Pin</label>
-				<input type="number" id="pin" name="pin" required></input>
-
-				<label htmlFor="confirm-pin">Confirmation du code Pin</label>
+				<label htmlFor="confirm_password">Confirmation du mot de passe</label>
 				<input
-					type="number"
-					id="confirm-pin"
-					name="confirm-pin"
+					type="password"
+					id="confirm_password"
+					name="confirm_password"
 					required
 				></input>
+
+				<label htmlFor="plain_pincode">
+					Choisissez un code Pin à 4 chiffres
+				</label>
+				<input
+					type="text"
+					id="plain_pincode"
+					name="plain_pincode"
+					required
+				></input>
+
+				<label htmlFor="confirm_pincode">Confirmation du code Pin</label>
+				<input
+					type="text"
+					inputMode="numeric"
+					pattern="[0-9]{4}"
+					id="confirm_pincode"
+					name="confirm_pincode"
+					required
+				/>
 
 				<button type="submit">Valider</button>
 				<button type="button">Annuler</button>
