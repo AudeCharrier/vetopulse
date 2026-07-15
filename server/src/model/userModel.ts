@@ -1,7 +1,6 @@
 import type { ResultSetHeader } from "mysql2";
-import { MedicalPeople } from "../types";
-
 import dbVet from "../../database/db";
+import type { MedicalPeople } from "../types";
 
 const addOne = async ({
 	last_name,
