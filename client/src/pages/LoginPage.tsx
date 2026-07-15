@@ -1,5 +1,15 @@
+import { Link } from "react-router";
+
 function LoginPage() {
-	return <p>hello from login</p>;
+	return (
+		<>
+			<h1>Se connecter</h1>
+
+			<p>
+				Pas encore membre ? <Link to="/signin">S'inscrire</Link>
+			</p>
+		</>
+	);
 }
 
 export default LoginPage;
