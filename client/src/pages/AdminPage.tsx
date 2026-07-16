@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
-import ProprioCard from "./ProprioCard"; // Si tu utilises notre composant autonome !
-import { apiFetch } from "../hooks/apiFetch";
+/* import ProprioCard from "./ProprioCard";
+ */ import { apiFetch } from "../hooks/apiFetch";
+
+interface Owner {
+	id: number;
+	lastname: string;
+	firstname: string;
+	email: string;
+	telephone: string;
+	adress: string;
+	zipcode: string;
+	city: string;
+}
 
 function AdminPage() {
-	const [proprios, setProprios] = useState([]);
+	const [owners, setOwners] = useState<Owner[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [message, setMessage] = useState<string>("");
 	const [isError, setIsError] = useState<boolean>(false);
 
 	useEffect(() => {
-		const fetchProprios = async () => {
+		const fetchOwners = async () => {
 			try {
-				const response = await apiFetch("/api/users", {
+				const response = await apiFetch("/api/owners", {
 					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
@@ -29,7 +40,7 @@ function AdminPage() {
 
 				if (response.status === 200) {
 					const data = await response.json();
-					setProprios(data);
+					setOwners(data);
 					setIsError(false);
 					setLoading(false);
 					return;
@@ -47,7 +58,7 @@ function AdminPage() {
 			}
 		};
 
-		fetchProprios();
+		fetchOwners();
 	}, []);
 
 	if (loading) return <p>Chargement des données administrateur...</p>;
@@ -56,7 +67,7 @@ function AdminPage() {
 		<>
 			<h2>Propriétaires</h2>
 
-			{proprios.length === 0 ? (
+			{owners.length === 0 ? (
 				<div
 					style={{
 						padding: "20px",
@@ -69,9 +80,9 @@ function AdminPage() {
 					<p>Aucun propriétaire n'a été trouvé.</p>
 				</div>
 			) : (
-				proprios.map((proprio) => (
+				owners.map((owner) => (
 					<section
-						key={proprio.id}
+						key={owner.id}
 						style={{
 							border: "2px solid #333",
 							padding: "15px",
@@ -82,21 +93,21 @@ function AdminPage() {
 						{/* Section Informations de contact */}
 						<div>
 							<div>
-								<p>Nom : {proprio.nom}</p>
+								<p>Nom : {owner.lastname}</p>
 								<button type="button">Modifier</button>
 							</div>
 							<div>
-								<p>Prénom : {proprio.prenom}</p>
+								<p>Prénom : {owner.firstname}</p>
 								<button type="button">Modifier</button>
 							</div>
 						</div>
 						<div>
 							<div>
-								<p>Email : {proprio.email}</p>
+								<p>Email : {owner.email}</p>
 								<button type="button">Modifier</button>
 							</div>
 							<div>
-								<p>Tel : {proprio.telephone}</p>
+								<p>Tel : {owner.telephone}</p>
 								<button type="button">Modifier</button>
 							</div>
 						</div>
@@ -109,9 +120,9 @@ function AdminPage() {
 								paddingTop: "10px",
 							}}
 						>
-							<p>Adresse : {proprio.adresse}</p>
-							<p>Code Postal : {proprio.zipcode}</p>
-							<p>Ville : {proprio.city}</p>
+							<p>Adresse : {owner.adress}</p>
+							<p>Code Postal : {owner.zipcode}</p>
+							<p>Ville : {owner.city}</p>
 							<button type="button">Voir les animaux</button>
 						</div>
 					</section>

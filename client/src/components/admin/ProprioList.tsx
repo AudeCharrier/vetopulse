@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import ProprioCard from "./ProprioCard";
 import { apiFetch } from "../../hooks/apiFetch";
 
 function ProprioList() {
-	const [proprios, setProprios] = useState([]);
+	const [owners, setOwners] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
-	// 1. Récupération des données (GET sur api/users) au montage du composant
 	useEffect(() => {
 		apiFetch("http://localhost:3310/api/users")
 			.then((res) => {
@@ -17,7 +15,7 @@ function ProprioList() {
 				return res.json();
 			})
 			.then((data) => {
-				setProprios(data);
+				setOwners(data);
 				setLoading(false);
 			})
 			.catch((err) => {
@@ -65,13 +63,13 @@ function ProprioList() {
 		<div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
 			<h2>Liste des Propriétaires</h2>
 
-			{proprios.length === 0 ? (
+			{owners.length === 0 ? (
 				<p>Aucun propriétaire trouvé.</p>
 			) : (
-				proprios.map((proprio) => (
+				owners.map((owner) => (
 					<ProprioCard
-						key={proprio.id}
-						proprio={proprio}
+						key={owner.id}
+						owner={owner}
 						/* 	onUpdateProprio={handleUpdateProprio} */
 					/>
 				))
