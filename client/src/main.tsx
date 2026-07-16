@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import SigninPage from "./pages/SigninPage.tsx";
 import "./index.css";
 import App from "./App.tsx";
+import AdminPage from "./pages/AdminPage.tsx";
 
 const router = createBrowserRouter([
 	{
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
 			{
 				path: "/signin",
 				element: <SigninPage />,
+			},
+			{
+				path: "/admin",
+				element: <AdminPage />,
 			},
 		],
 	},
