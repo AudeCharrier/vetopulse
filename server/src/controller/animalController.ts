@@ -1,10 +1,11 @@
-import type { Request, Response } from "express";
-import { browseAnimalsByOwnerId, editAnimalById } from "../model/animalModel";
+import type { RequestHandler } from "express";
+import {
+	browseAnimalsByOwnerId,
+	deleteAnimalById,
+	editAnimalById,
+} from "../model/animalModel";
 
-export const getAnimalsByOwnerId = async (
-	req: Request,
-	res: Response,
-): Promise<void> => {
+export const getAnimalsByOwnerId: RequestHandler = async (req, res) => {
 	try {
 		const ownerId = Number(req.params.id);
 
@@ -24,10 +25,8 @@ export const getAnimalsByOwnerId = async (
 		});
 	}
 };
-export const editOneAnimal = async (
-	req: Request,
-	res: Response,
-): Promise<void> => {
+
+export const updateOneAnimal: RequestHandler = async (req, res) => {
 	try {
 		const animalId = Number(req.params.id);
 
@@ -56,7 +55,36 @@ export const editOneAnimal = async (
 		console.error("Erreur:", error);
 		res.status(500).json({
 			success: false,
-			message: "Erreur serveur lors de la récupération des animaux.",
+			message: "Erreur serveur lors de la modification de l'animal.", // J'ai corrigé le message qui parlait de "récupération" ;)
+		});
+	}
+};
+
+export const deleteOneAnimal: RequestHandler = async (req, res) => {
+	try {
+		const animalId = Number(req.params.id);
+
+		if (Number.isNaN(animalId)) {
+			res.status(400).json({ message: "ID de l'animal invalide." });
+			return;
+		}
+
+		const isDeleted = await deleteAnimalById(animalId);
+
+		if (!isDeleted) {
+			res.status(404).json({ message: "Animal non trouvé." });
+			return;
+		}
+
+		res.status(200).json({
+			message:
+				"L'animal et tout son historique médical ont été supprimés avec succès.",
+		});
+	} catch (error) {
+		console.error("Erreur lors de la suppression :", error);
+		res.status(500).json({
+			success: false,
+			message: "Erreur serveur lors de la suppression de l'animal.",
 		});
 	}
 };

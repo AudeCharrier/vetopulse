@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { editOneAnimal } from "../controller/animalController";
+import {
+	deleteOneAnimal,
+	updateOneAnimal,
+} from "../controller/animalController";
 
 const router = Router();
 
-router.patch("/:id", editOneAnimal);
+router.patch("/:id", updateOneAnimal);
+router.delete("/:id", deleteOneAnimal);
 
 export default router;
