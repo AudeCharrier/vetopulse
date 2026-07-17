@@ -1,4 +1,4 @@
-import type { RowDataPacket, ResultSetHeader } from "mysql2";
+import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import dbVet from "../../database/db";
 
 interface AnimalRows extends RowDataPacket {
@@ -15,7 +15,7 @@ interface AnimalRows extends RowDataPacket {
 	observations: string;
 }
 
-const browseAnimalsByOwnerId = async (
+export const browseAnimalsByOwnerId = async (
 	ownerId: number,
 ): Promise<AnimalRows[]> => {
 	const [rows] = await dbVet.query<AnimalRows[]>(
@@ -31,7 +31,7 @@ const browseAnimalsByOwnerId = async (
 	return rows;
 };
 
-const editAnimalById = async (
+export const editAnimalById = async (
 	animalId: number,
 	dataToUpdate: Partial<AnimalRows>,
 ): Promise<Partial<AnimalRows> | null> => {
@@ -58,4 +58,15 @@ const editAnimalById = async (
 	}
 };
 
-export { browseAnimalsByOwnerId, editAnimalById };
+export const deleteAnimalById = async (animalId: number): Promise<boolean> => {
+	const query = `DELETE FROM animal WHERE id = ?`;
+
+	try {
+		const [result] = await dbVet.query<ResultSetHeader>(query, [animalId]);
+
+		return result.affectedRows > 0;
+	} catch (error) {
+		console.error("Erreur SQL lors de la suppression de l'animal :", error);
+		throw error;
+	}
+};

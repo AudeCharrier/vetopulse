@@ -164,6 +164,39 @@ function AdminPage() {
 			setIsError(true);
 		}
 	};
+
+	const handleDeleteAnimal = async (animalId: number, petName: string) => {
+		const confirmDelete = window.confirm(
+			`Êtes-vous sûr de vouloir supprimer définitivement ${petName} ?`,
+		);
+		if (!confirmDelete) return;
+
+		try {
+			const response = await apiFetch(`/api/animals/${animalId}`, {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			// Gère le code 200 ou 204 (No Content) souvent utilisé pour les suppressions
+			if (response.status === 200 || response.status === 204) {
+				// Met à jour l'état local en filtrant l'animal supprimé
+				setAnimals((prevAnimals) =>
+					prevAnimals.filter((animal) => animal.id !== animalId),
+				);
+				setMessage(`L'animal ${petName} a bien été supprimé.`);
+				setIsError(false);
+			} else {
+				setMessage(`Erreur lors de la suppression (${response.status}).`);
+				setIsError(true);
+			}
+		} catch (error) {
+			console.error("Erreur lors de la suppression :", error);
+			setMessage("Une erreur réseau est survenue lors de la suppression.");
+			setIsError(true);
+		}
+	};
 	return (
 		<>
 			<h2>Propriétaires</h2>
@@ -381,6 +414,14 @@ function AdminPage() {
 													Modifier
 												</button>
 											</div>
+											<button
+												type="button"
+												onClick={() =>
+													handleDeleteAnimal(animal.id, animal.pet_name)
+												}
+											>
+												Supprimer cet animal
+											</button>
 										</div>
 									))
 								)}
