@@ -76,6 +76,7 @@ function AdminPage() {
 
 		fetchOwners();
 	}, []);
+	if (loading) return <p>Chargement des données administrateur...</p>;
 
 	const fetchAnimals = async (ownerId: number) => {
 		try {
@@ -112,8 +113,57 @@ function AdminPage() {
 		}
 	};
 
-	if (loading) return <p>Chargement des données administrateur...</p>;
+	const handleUpdateAnimalField = async (
+		animalId: number,
+		field: keyof Animal,
+		currentValue: string | boolean,
+	) => {
+		// 1. Demande la nouvelle valeur à l'utilisateur via un prompt (en attendant un vrai formulaire modal)
+		// On gère le cas particulier du booléen "is_neutered" différemment si nécessaire, mais restons simple pour l'instant
+		let newValue: string | boolean | null = null;
 
+		if (typeof currentValue === "boolean") {
+			newValue = window.confirm(
+				`L'animal est-il stérilisé ? (OK = Oui, Annuler = Non)`,
+			);
+		} else {
+			const promptValue = window.prompt(
+				`Modifier le champ "${field}" :`,
+				currentValue ?? "",
+			);
+			if (promptValue === null) return; // L'utilisateur a cliqué sur "Annuler"
+			newValue = promptValue.trim();
+		}
+
+		try {
+			// 2. Appel API vers ton serveur
+			const response = await apiFetch(`/api/animals/${animalId}`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ [field]: newValue }),
+			});
+
+			if (response.status === 200) {
+				// 3. Mise à jour de l'état local pour rafraîchir l'interface instantanément !
+				setAnimals((prevAnimals) =>
+					prevAnimals.map((animal) =>
+						animal.id === animalId ? { ...animal, [field]: newValue } : animal,
+					),
+				);
+				setMessage("Modification enregistrée avec succès.");
+				setIsError(false);
+			} else {
+				setMessage(`Erreur lors de la modification (${response.status}).`);
+				setIsError(true);
+			}
+		} catch (error) {
+			console.error("Erreur lors de la modification :", error);
+			setMessage("Une erreur réseau est survenue lors de la modification.");
+			setIsError(true);
+		}
+	};
 	return (
 		<>
 			<h2>Propriétaires</h2>
@@ -172,8 +222,11 @@ function AdminPage() {
 								}}
 							>
 								<p>Adresse : {owner.adress}</p>
+								<button type="button">Modifier</button>
 								<p>Code Postal : {owner.zipcode}</p>
+								<button type="button">Modifier</button>
 								<p>Ville : {owner.city}</p>
+								<button type="button">Modifier</button>
 								<button type="button" onClick={() => fetchAnimals(owner.id)}>
 									Voir les animaux
 								</button>
@@ -210,47 +263,124 @@ function AdminPage() {
 														: "none",
 											}}
 										>
-											<p>
-												<strong>Nom :</strong> {animal.pet_name}
-											</p>
-											<p>
-												<strong>Date de naissance :</strong>{" "}
-												{new Date(animal.birth_date).toLocaleDateString()}
-											</p>
-											<p>
-												<strong>Espèce :</strong> {animal.species_name}
-											</p>
-											<p>
-												<strong>Race :</strong> {animal.race_name}
-											</p>
-											<p>
-												<strong>Genre :</strong> {animal.gender}
-											</p>
-											<p>
-												<strong>Stérilisé :</strong>{" "}
-												{animal.is_neutered ? "Oui" : "Non"}
-											</p>
-											{animal.insurance && (
+											<div>
 												<p>
-													<strong>Assurance :</strong> {animal.insurance}
+													<strong>Nom :</strong> {animal.pet_name}
 												</p>
-											)}
-											{animal.microchip_number && (
 												<p>
-													<strong>Numéro de puce :</strong>{" "}
-													{animal.microchip_number}
+													<strong>Date de naissance :</strong>{" "}
+													{new Date(animal.birth_date).toLocaleDateString()}
 												</p>
-											)}
-											{animal.tatoo_number && (
+											</div>
+											<div>
 												<p>
-													<strong>Tatouage :</strong> {animal.tatoo_number}
+													<strong>Espèce :</strong> {animal.species_name}
 												</p>
-											)}
-											{animal.observations && (
-												<p style={{ fontStyle: "italic", color: "#555" }}>
-													<strong>Observations :</strong> {animal.observations}
+												<p>
+													<strong>Race :</strong> {animal.race_name}
 												</p>
-											)}
+											</div>
+											<div>
+												<p>
+													<strong>Genre :</strong> {animal.gender}
+												</p>
+												<p>
+													<strong>Stérilisé :</strong>{" "}
+													{animal.is_neutered ? "Oui" : "Non"}
+												</p>
+												<button
+													type="button"
+													onClick={() =>
+														handleUpdateAnimalField(
+															animal.id,
+															"is_neutered",
+															animal.is_neutered,
+														)
+													}
+												>
+													Modifier
+												</button>
+											</div>
+
+											<div>
+												<div>
+													<p>
+														<strong>Numéro de puce :</strong>{" "}
+														{animal.microchip_number
+															? animal.microchip_number
+															: "Aucune"}
+													</p>
+													<button
+														type="button"
+														onClick={() =>
+															handleUpdateAnimalField(
+																animal.id,
+																"microchip_number",
+																animal.microchip_number,
+															)
+														}
+													>
+														Modifier
+													</button>
+												</div>
+
+												<div>
+													<p>
+														<strong>Tatouage :</strong>{" "}
+														{animal.tatoo_number
+															? animal.tatoo_number
+															: "Aucune"}
+													</p>
+													<button
+														type="button"
+														onClick={() =>
+															handleUpdateAnimalField(
+																animal.id,
+																"tatoo_number",
+																animal.tatoo_number,
+															)
+														}
+													>
+														Modifier
+													</button>
+												</div>
+											</div>
+											<div>
+												<div>
+													<p>
+														<strong>Assurance :</strong>{" "}
+														{animal.insurance ? animal.insurance : "Aucune"}
+													</p>
+													<button
+														type="button"
+														onClick={() =>
+															handleUpdateAnimalField(
+																animal.id,
+																"insurance",
+																animal.insurance,
+															)
+														}
+													>
+														Modifier
+													</button>
+												</div>
+												<p>
+													<strong>Observations :</strong>{" "}
+													{animal.observations ? animal.observations : "Aucune"}
+												</p>
+												<button
+													type="button"
+													onClick={() =>
+														handleUpdateAnimalField(
+															animal.id,
+															"observations",
+															animal.observations,
+														)
+													}
+												>
+													Modifier
+												</button>
+											</div>
 										</div>
 									))
 								)}

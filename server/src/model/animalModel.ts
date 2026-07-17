@@ -1,4 +1,4 @@
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import dbVet from "../../database/db";
 
 interface AnimalRows extends RowDataPacket {
@@ -31,4 +31,31 @@ const browseAnimalsByOwnerId = async (
 	return rows;
 };
 
-export { browseAnimalsByOwnerId };
+const editAnimalById = async (
+	animalId: number,
+	dataToUpdate: Partial<AnimalRows>,
+): Promise<Partial<AnimalRows> | null> => {
+	const fields = Object.keys(dataToUpdate);
+	if (fields.length === 0) {
+		throw new Error("Aucun champ à mettre à jour");
+	}
+	const setClause = fields.map((field) => `\`${field}\` = ?`).join(", ");
+	const values = Object.values(dataToUpdate);
+	values.push(animalId);
+	const query = `UPDATE animal SET ${setClause} WHERE id = ?`;
+
+	try {
+		const [result] = await dbVet.query<ResultSetHeader>(query, values);
+
+		if (result.affectedRows === 0) {
+			return null;
+		}
+
+		return { animalId, ...dataToUpdate };
+	} catch (error) {
+		console.error("Erreur SQL lors de la mise à jour :", error);
+		throw error;
+	}
+};
+
+export { browseAnimalsByOwnerId, editAnimalById };
