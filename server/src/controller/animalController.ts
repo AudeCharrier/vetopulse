@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { browseAnimalsByOwnerId } from "../model/animalModel";
 
-export const readAnimalsByOwnerId = async (
+export const getAnimalsByOwnerId = async (
 	req: Request,
 	res: Response,
 ): Promise<void> => {
@@ -9,7 +9,7 @@ export const readAnimalsByOwnerId = async (
 		// req.params.id correspond au ":id" de ta route
 		const ownerId = Number(req.params.id);
 
-		if (isNaN(ownerId)) {
+		if (Number.isNaN(ownerId)) {
 			res.status(400).json({ message: "ID du propriétaire invalide." });
 			return;
 		}
